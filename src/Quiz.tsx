@@ -241,7 +241,8 @@ const Quiz: React.FC = () => {
       score: 0,
       totalScore: 0,
       currentPhase: 1,
-      answeredQuestions: [], // Inicializa como array vazio
+      answeredQuestions: [],
+      finished: false,
     }));
     setPlayers(initialPlayers);
   };
@@ -272,30 +273,32 @@ const Quiz: React.FC = () => {
 
     const currentPhaseQuestions =
       phases[player.currentPhase - 1]?.questions || [];
+
     if (
       player.answeredQuestions.length >= currentPhaseQuestions.length &&
       player.score >= 4
     ) {
-      player.currentPhase += 1;
-      player.score = 0;
-      player.answeredQuestions = [];
+      if (player.currentPhase < phases.length) {
+        player.currentPhase += 1;
+        player.score = 0;
+        player.answeredQuestions = [];
+      } else {
+        player.finished = true;
+      }
     }
 
-    // Verifica se todos os jogadores completaram todas as fases
-    const allFinished = updatedPlayers.every(
-      (p) => p.currentPhase > phases.length
-    );
+    setPlayers(updatedPlayers);
 
+    const allFinished = updatedPlayers.every((p) => p.finished);
     if (allFinished) {
       setGameOver(true);
     } else {
-      // Avança para o próximo jogador
-      const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+      let nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+      while (updatedPlayers[nextPlayerIndex].finished) {
+        nextPlayerIndex = (nextPlayerIndex + 1) % players.length;
+      }
       setCurrentPlayerIndex(nextPlayerIndex);
     }
-
-    // Atualiza o estado dos jogadores
-    setPlayers(updatedPlayers);
   };
 
   const currentPhase = players[currentPlayerIndex]?.currentPhase;
@@ -311,9 +314,10 @@ const Quiz: React.FC = () => {
       : null;
 
   const getCurrentPhaseText = (phaseNumber: number) => {
-    return `Fase ${phaseNumber}: ${
-      phases.find((phase) => phase.phaseNumber === phaseNumber)?.phaseTitle
-    }`;
+    const phase = phases.find((p) => p.phaseNumber === phaseNumber);
+    return phase
+      ? `Fase ${phaseNumber}: ${phase.phaseTitle}`
+      : "Fase Finalizada";
   };
 
   const getClassification = (score: number) => {
@@ -324,11 +328,11 @@ const Quiz: React.FC = () => {
     return "Infelizmente, seu desempenho ficou abaixo do esperado. Vamos trabalhar para melhorar na próxima vez!)";
   };
 
-  const handleRestart = () => {
-    setPlayers([]);
-    setCurrentPlayerIndex(0);
-    setGameOver(false);
-  };
+  // const handleRestart = () => {
+  //   setPlayers([]);
+  //   setCurrentPlayerIndex(0);
+  //   setGameOver(false);
+  // };
 
   return (
     <div>
@@ -348,7 +352,14 @@ const Quiz: React.FC = () => {
                 <br />
               </>
             ))}
-          <Button variant="contained" color="secondary" onClick={handleRestart}>
+          {/* <Button variant="contained" color="secondary" onClick={handleRestart}>
+            Reiniciar Quiz
+          </Button> */}
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => window.location.reload()}
+          >
             Reiniciar Quiz
           </Button>
         </div>

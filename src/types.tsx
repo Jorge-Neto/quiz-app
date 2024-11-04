@@ -15,4 +15,5 @@ export type Player = {
   totalScore: number;
   currentPhase: number;
   answeredQuestions: string[];
+  finished: boolean;
 };
