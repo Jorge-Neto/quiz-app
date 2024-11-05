@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Phase, Player } from "./types";
 import PlayerSetup from "./PlayerSetup";
 import { Button } from "@mui/material";
-import { Howl } from "howler";
+import ReactHowler from "react-howler";
 
 import phase1 from "./images/phase1.png";
 import phase2 from "./images/phase2.png";
@@ -236,20 +236,13 @@ const phases: Phase[] = [
   },
 ];
 
-const correctSound = new Howl({
-  src: ["/sounds/correct.mp3"],
-});
-
-const incorrectSound = new Howl({
-  src: ["/sounds/incorrect.mp3"],
-});
-
 const phaseBackgrounds = [phase1, phase2, phase3, phase4];
 
 const Quiz: React.FC = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [gameOver, setGameOver] = useState(false);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
   const handleStart = (playerNames: string[]) => {
     const initialPlayers: Player[] = playerNames.map((name) => ({
@@ -284,9 +277,9 @@ const Quiz: React.FC = () => {
     if (isCorrect) {
       player.score += 1;
       player.totalScore += 1;
-      correctSound.play();
+      setIsCorrect(true);
     } else {
-      incorrectSound.play();
+      setIsCorrect(false);
     }
 
     player.answeredQuestions.push(question);
@@ -360,54 +353,67 @@ const Quiz: React.FC = () => {
         padding: "0px",
       }}
     >
-      {players.length === 0 ? (
-        <PlayerSetup onStart={handleStart} />
-      ) : gameOver ? (
-        <div>
-          <h2>Classificação Final:</h2>
-          {players
-            .sort((a, b) => b.totalScore - a.totalScore)
-            .map((player, index) => (
-              <>
-                <p key={index}>
-                  {index + 1}º {player.name} - Pontuação: {player.totalScore}
-                </p>
-                <p className="small">{getClassification(player.totalScore)}</p>
-                <br />
-              </>
-            ))}
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => window.location.reload()}
-          >
-            Reiniciar Quiz
-          </Button>
-        </div>
-      ) : (
-        <div>
-          <h1>
-            {getCurrentPhaseText(players[currentPlayerIndex].currentPhase)}
-          </h1>
-          <h2>{players[currentPlayerIndex].name}, é sua vez!</h2>
-          {randomQuestion && <p>{randomQuestion.question}</p>}
-          <Button
-            variant="contained"
-            color="success"
-            onClick={() => handleAnswer(true, randomQuestion?.question)}
-            style={{ marginRight: "8px" }}
-          >
-            Verdadeiro
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => handleAnswer(false, randomQuestion?.question)}
-          >
-            Falso
-          </Button>
-        </div>
-      )}
+      <header className="App-header">
+        {players.length === 0 ? (
+          <PlayerSetup onStart={handleStart} />
+        ) : gameOver ? (
+          <div>
+            <h2>Classificação Final:</h2>
+            {players
+              .sort((a, b) => b.totalScore - a.totalScore)
+              .map((player, index) => (
+                <>
+                  <p key={index}>
+                    {index + 1}º {player.name} - Pontuação: {player.totalScore}
+                  </p>
+                  <p className="small">
+                    {getClassification(player.totalScore)}
+                  </p>
+                  <br />
+                </>
+              ))}
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => window.location.reload()}
+            >
+              Reiniciar Quiz
+            </Button>
+          </div>
+        ) : (
+          <div>
+            {isCorrect !== null && (
+              <ReactHowler
+                src={
+                  isCorrect ? "./sounds/correct.mp3" : "./sounds/incorrect.mp3"
+                }
+                playing={true}
+                onEnd={() => setIsCorrect(null)} // Reseta após o som tocar
+              />
+            )}
+            <h1>
+              {getCurrentPhaseText(players[currentPlayerIndex].currentPhase)}
+            </h1>
+            <h2>{players[currentPlayerIndex].name}, é sua vez!</h2>
+            {randomQuestion && <p>{randomQuestion.question}</p>}
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => handleAnswer(true, randomQuestion?.question)}
+              style={{ marginRight: "8px" }}
+            >
+              Verdadeiro
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => handleAnswer(false, randomQuestion?.question)}
+            >
+              Falso
+            </Button>
+          </div>
+        )}
+      </header>
     </div>
   );
 };

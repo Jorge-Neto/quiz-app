@@ -29,7 +29,7 @@ const PlayerSetup: React.FC<{ onStart: (players: string[]) => void }> = ({
           style={{
             marginBottom: "8px",
             marginLeft: "8px",
-            backgroundColor: "#f3f5eb",
+            backgroundColor: "#ffffff",
           }}
           value={numberOfPlayers}
           onChange={(e) => setNumberOfPlayers(Number(e.target.value))}
@@ -45,7 +45,7 @@ const PlayerSetup: React.FC<{ onStart: (players: string[]) => void }> = ({
             placeholder={`Nome do Jogador ${index + 1}`}
             value={playerNames[index]}
             onChange={(e) => handleNameChange(index, e.target.value)}
-            style={{ backgroundColor: "#f3f5eb", marginBottom: "8px" }}
+            style={{ backgroundColor: "#ffffff", marginBottom: "8px" }}
           />
         </div>
       ))}
