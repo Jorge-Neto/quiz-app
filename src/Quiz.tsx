@@ -1,7 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Phase, Player } from "./types";
 import PlayerSetup from "./PlayerSetup";
 import { Button } from "@mui/material";
+import { Howl } from "howler";
+
+import phase1 from "./images/phase1.png";
+import phase2 from "./images/phase2.png";
+import phase3 from "./images/phase3.png";
+import phase4 from "./images/phase4.png";
 
 const phases: Phase[] = [
   {
@@ -230,6 +236,16 @@ const phases: Phase[] = [
   },
 ];
 
+const correctSound = new Howl({
+  src: ["/sounds/correct.mp3"],
+});
+
+const incorrectSound = new Howl({
+  src: ["/sounds/incorrect.mp3"],
+});
+
+const phaseBackgrounds = [phase1, phase2, phase3, phase4];
+
 const Quiz: React.FC = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
@@ -259,14 +275,18 @@ const Quiz: React.FC = () => {
       player.answeredQuestions = [];
     }
 
-    if (
+    const isCorrect =
       phases
         .find((item) => item.phaseNumber === player.currentPhase)
         ?.questions.find((item) => item.question === question)?.answer ===
-      userResponse
-    ) {
+      userResponse;
+
+    if (isCorrect) {
       player.score += 1;
       player.totalScore += 1;
+      correctSound.play();
+    } else {
+      incorrectSound.play();
     }
 
     player.answeredQuestions.push(question);
@@ -328,14 +348,18 @@ const Quiz: React.FC = () => {
     return "Infelizmente, seu desempenho ficou abaixo do esperado. Vamos trabalhar para melhorar na próxima vez!)";
   };
 
-  // const handleRestart = () => {
-  //   setPlayers([]);
-  //   setCurrentPlayerIndex(0);
-  //   setGameOver(false);
-  // };
-
   return (
-    <div>
+    <div
+      style={{
+        backgroundImage: `url(${
+          phaseBackgrounds[players[currentPlayerIndex]?.currentPhase - 1]
+        })`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        minHeight: "100vh",
+        padding: "0px",
+      }}
+    >
       {players.length === 0 ? (
         <PlayerSetup onStart={handleStart} />
       ) : gameOver ? (
@@ -352,9 +376,6 @@ const Quiz: React.FC = () => {
                 <br />
               </>
             ))}
-          {/* <Button variant="contained" color="secondary" onClick={handleRestart}>
-            Reiniciar Quiz
-          </Button> */}
           <Button
             variant="contained"
             color="secondary"

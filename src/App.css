@@ -12,6 +12,30 @@
   .MuiButton-colorSecondary {
     background-color: #a87e4c;
   }
+
+  .phase-background {
+    position: relative;
+    width: 100%;
+    height: 100vh; /* Ajuste conforme necessário */
+    background-size: cover;
+    background-position: center;
+  }
+
+  .phase-1 {
+    background-image: url("./images/phase1.png");
+  }
+
+  .phase-2 {
+    background-image: url("./images/phase2.png");
+  }
+
+  .phase-3 {
+    background-image: url("./images/phase3.png");
+  }
+
+  .phase-4 {
+    background-image: url("./images/phase4.png");
+  }
 }
 
 .App-logo {
