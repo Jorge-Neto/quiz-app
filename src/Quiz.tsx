@@ -354,6 +354,7 @@ const Quiz: React.FC = () => {
       style={{
         backgroundImage: backgroundImage ? `url(${backgroundImage})` : "none",
         backgroundSize: "cover",
+        color: backgroundImage ? `white` : "",
         backgroundPosition: "center",
         minHeight: "100vh",
         padding: "0px",
@@ -397,11 +398,17 @@ const Quiz: React.FC = () => {
                 onEnd={() => setIsCorrect(null)} // Reseta após o som tocar
               />
             )}
-            <h1>
+            <h1 style={{ color: backgroundImage ? `white` : "" }}>
               {getCurrentPhaseText(players[currentPlayerIndex].currentPhase)}
             </h1>
-            <h2>{players[currentPlayerIndex].name}, é sua vez!</h2>
-            {randomQuestion && <p>{randomQuestion.question}</p>}
+            <h2 style={{ color: backgroundImage ? `white` : "" }}>
+              {players[currentPlayerIndex].name}, é sua vez!
+            </h2>
+            {randomQuestion && (
+              <p style={{ color: backgroundImage ? `white` : "" }}>
+                {randomQuestion.question}
+              </p>
+            )}
             <Button
               variant="contained"
               color="success"
