@@ -12,6 +12,7 @@ import phase4 from "./images/phase4.png";
 const phases: Phase[] = [
   {
     phaseNumber: 1,
+    backgroundImage: phase1,
     questions: [
       {
         question:
@@ -68,6 +69,7 @@ const phases: Phase[] = [
   },
   {
     phaseNumber: 2,
+    backgroundImage: phase2,
     questions: [
       {
         question:
@@ -124,6 +126,7 @@ const phases: Phase[] = [
   },
   {
     phaseNumber: 3,
+    backgroundImage: phase3,
     questions: [
       {
         question:
@@ -180,6 +183,7 @@ const phases: Phase[] = [
   },
   {
     phaseNumber: 4,
+    backgroundImage: phase4,
     questions: [
       {
         question:
@@ -256,7 +260,7 @@ const Quiz: React.FC = () => {
     setPlayers(initialPlayers);
   };
 
-  const handleAnswer = (
+  const handleAnswer = async (
     userResponse: boolean,
     question: string | undefined
   ) => {
@@ -326,6 +330,10 @@ const Quiz: React.FC = () => {
         ]
       : null;
 
+  const backgroundImage = !gameOver
+    ? phases[currentPhase - 1]?.backgroundImage
+    : "";
+
   const getCurrentPhaseText = (phaseNumber: number) => {
     const phase = phases.find((p) => p.phaseNumber === phaseNumber);
     return phase
@@ -344,9 +352,7 @@ const Quiz: React.FC = () => {
   return (
     <div
       style={{
-        backgroundImage: `url(${
-          phaseBackgrounds[players[currentPlayerIndex]?.currentPhase - 1]
-        })`,
+        backgroundImage: backgroundImage ? `url(${backgroundImage})` : "none",
         backgroundSize: "cover",
         backgroundPosition: "center",
         minHeight: "100vh",
