@@ -2,17 +2,17 @@ import React, { useState } from "react";
 import { Phase, Player } from "./types";
 import PlayerSetup from "./PlayerSetup";
 import { Button } from "@mui/material";
-import ReactHowler from "react-howler";
+import { Howl } from "howler";
 
-import phase1 from "./images/phase1.png";
-import phase2 from "./images/phase2.png";
-import phase3 from "./images/phase3.png";
-import phase4 from "./images/phase4.png";
+import phase1 from "./images/phase1.jpg";
+import phase2 from "./images/phase2.jpg";
+import phase3 from "./images/phase3.jpg";
+import phase4 from "./images/phase4.jpg";
 
 const phases: Phase[] = [
   {
     phaseNumber: 1,
-    backgroundImage: phase1,
+    phaseTitle: "Primeiro Ano de Faculdade",
     questions: [
       {
         question:
@@ -65,11 +65,10 @@ const phases: Phase[] = [
         answer: false,
       },
     ],
-    phaseTitle: "Primeiro Ano de Faculdade",
   },
   {
     phaseNumber: 2,
-    backgroundImage: phase2,
+    phaseTitle: "Estágios e Primeiras Experiências Práticas",
     questions: [
       {
         question:
@@ -122,11 +121,10 @@ const phases: Phase[] = [
         answer: false,
       },
     ],
-    phaseTitle: "Estágios e Primeiras Experiências Práticas",
   },
   {
     phaseNumber: 3,
-    backgroundImage: phase3,
+    phaseTitle: "Anos Finais e Exame da OAB",
     questions: [
       {
         question:
@@ -179,11 +177,10 @@ const phases: Phase[] = [
         answer: false,
       },
     ],
-    phaseTitle: "Anos Finais e Exame da OAB",
   },
   {
     phaseNumber: 4,
-    backgroundImage: phase4,
+    phaseTitle: "Tornar-se um Advogado Renomado",
     questions: [
       {
         question:
@@ -236,9 +233,16 @@ const phases: Phase[] = [
         answer: true,
       },
     ],
-    phaseTitle: "Tornar-se um Advogado Renomado",
   },
 ];
+
+const correctSound = new Howl({
+  src: ["/sounds/correct.mp3"],
+});
+
+const incorrectSound = new Howl({
+  src: ["/sounds/incorrect.mp3"],
+});
 
 const phaseBackgrounds = [phase1, phase2, phase3, phase4];
 
@@ -246,7 +250,7 @@ const Quiz: React.FC = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [isSoundPlaying, setIsSoundPlaying] = useState(false);
 
   const handleStart = (playerNames: string[]) => {
     const initialPlayers: Player[] = playerNames.map((name) => ({
@@ -255,50 +259,56 @@ const Quiz: React.FC = () => {
       totalScore: 0,
       currentPhase: 1,
       answeredQuestions: [],
+      currentQuestionIndex: 0,
       finished: false,
     }));
     setPlayers(initialPlayers);
   };
 
-  const handleAnswer = async (
+  const handleAnswer = (
     userResponse: boolean,
     question: string | undefined
   ) => {
     if (!question) return;
-    const updatedPlayers = [...players];
+    setIsSoundPlaying(true);
+
+    const updatedPlayers = players.map((p, index) =>
+      index === currentPlayerIndex
+        ? { ...p, answeredQuestions: [...p.answeredQuestions] }
+        : p
+    );
+
     const player = updatedPlayers[currentPlayerIndex];
 
-    if (!player.answeredQuestions) {
-      player.answeredQuestions = [];
-    }
-
     const isCorrect =
-      phases
-        .find((item) => item.phaseNumber === player.currentPhase)
-        ?.questions.find((item) => item.question === question)?.answer ===
-      userResponse;
+      phases.find((item) => item.phaseNumber === player.currentPhase)
+        ?.questions[player.currentQuestionIndex]?.answer === userResponse;
 
     if (isCorrect) {
       player.score += 1;
       player.totalScore += 1;
-      setIsCorrect(true);
+      correctSound.play();
+      correctSound.on("end", () => setIsSoundPlaying(false));
     } else {
-      setIsCorrect(false);
+      incorrectSound.play();
+      incorrectSound.on("end", () => setIsSoundPlaying(false));
     }
 
     player.answeredQuestions.push(question);
+    player.currentQuestionIndex += 1;
 
     const currentPhaseQuestions =
       phases[player.currentPhase - 1]?.questions || [];
 
-    if (
-      player.answeredQuestions.length >= currentPhaseQuestions.length &&
-      player.score >= 4
-    ) {
+    const hasAnsweredAllQuestions =
+      player.currentQuestionIndex >= currentPhaseQuestions.length;
+
+    if (hasAnsweredAllQuestions) {
+      // Avança para a próxima fase
       if (player.currentPhase < phases.length) {
         player.currentPhase += 1;
-        player.score = 0;
         player.answeredQuestions = [];
+        player.currentQuestionIndex = 0;
       } else {
         player.finished = true;
       }
@@ -319,20 +329,11 @@ const Quiz: React.FC = () => {
   };
 
   const currentPhase = players[currentPlayerIndex]?.currentPhase;
-  const currentPhaseQuestions = currentPhase
-    ? phases[currentPhase - 1]?.questions
-    : [];
-
-  const randomQuestion =
-    currentPhaseQuestions && currentPhaseQuestions.length > 0
-      ? currentPhaseQuestions[
-          Math.floor(Math.random() * currentPhaseQuestions.length)
-        ]
-      : null;
-
-  const backgroundImage = !gameOver
-    ? phases[currentPhase - 1]?.backgroundImage
-    : "";
+  const currentQuestionIndex =
+    players[currentPlayerIndex]?.currentQuestionIndex;
+  const currentQuestion = currentPhase
+    ? phases[currentPhase - 1]?.questions[currentQuestionIndex]
+    : null;
 
   const getCurrentPhaseText = (phaseNumber: number) => {
     const phase = phases.find((p) => p.phaseNumber === phaseNumber);
@@ -350,83 +351,67 @@ const Quiz: React.FC = () => {
   };
 
   return (
-    <div
-      style={{
-        backgroundImage: backgroundImage ? `url(${backgroundImage})` : "none",
-        backgroundSize: "cover",
-        color: backgroundImage ? `white` : "",
-        backgroundPosition: "center",
-        minHeight: "100vh",
-        padding: "0px",
-      }}
-    >
-      <header className="App-header">
-        {players.length === 0 ? (
-          <PlayerSetup onStart={handleStart} />
-        ) : gameOver ? (
-          <div>
-            <h2>Classificação Final:</h2>
-            {players
-              .sort((a, b) => b.totalScore - a.totalScore)
-              .map((player, index) => (
-                <>
-                  <p key={index}>
-                    {index + 1}º {player.name} - Pontuação: {player.totalScore}
-                  </p>
-                  <p className="small">
-                    {getClassification(player.totalScore)}
-                  </p>
-                  <br />
-                </>
-              ))}
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={() => window.location.reload()}
-            >
-              Reiniciar Quiz
-            </Button>
-          </div>
-        ) : (
-          <div>
-            {isCorrect !== null && (
-              <ReactHowler
-                src={
-                  isCorrect ? "./sounds/correct.mp3" : "./sounds/incorrect.mp3"
-                }
-                playing={true}
-                onEnd={() => setIsCorrect(null)} // Reseta após o som tocar
-              />
-            )}
-            <h1 style={{ color: backgroundImage ? `white` : "" }}>
-              {getCurrentPhaseText(players[currentPlayerIndex].currentPhase)}
-            </h1>
-            <h2 style={{ color: backgroundImage ? `white` : "" }}>
-              {players[currentPlayerIndex].name}, é sua vez!
-            </h2>
-            {randomQuestion && (
-              <p style={{ color: backgroundImage ? `white` : "" }}>
-                {randomQuestion.question}
-              </p>
-            )}
-            <Button
-              variant="contained"
-              color="success"
-              onClick={() => handleAnswer(true, randomQuestion?.question)}
-              style={{ marginRight: "8px" }}
-            >
-              Verdadeiro
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={() => handleAnswer(false, randomQuestion?.question)}
-            >
-              Falso
-            </Button>
-          </div>
-        )}
-      </header>
+    <div>
+      {players.length === 0 ? (
+        <PlayerSetup onStart={handleStart} />
+      ) : gameOver ? (
+        <div>
+          <h2>Classificação Final:</h2>
+          {players
+            .sort((a, b) => b.totalScore - a.totalScore)
+            .map((player, index) => (
+              <>
+                <p key={index}>
+                  {index + 1}º {player.name} - Pontuação: {player.totalScore}
+                </p>
+                <p className="small">{getClassification(player.totalScore)}</p>
+                <br />
+              </>
+            ))}
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => window.location.reload()}
+          >
+            Reiniciar Quiz
+          </Button>
+        </div>
+      ) : (
+        <div>
+          <img
+            style={{ width: "300px", maxWidth: "90%", borderRadius: "8px" }}
+            src={
+              phaseBackgrounds[players[currentPlayerIndex]?.currentPhase - 1]
+            }
+            alt={
+              phaseBackgrounds[players[currentPlayerIndex]?.currentPhase - 1]
+            }
+            className="image-motion"
+          />
+          <h2>
+            {getCurrentPhaseText(players[currentPlayerIndex].currentPhase)}
+          </h2>
+          <h2>{players[currentPlayerIndex].name}, é sua vez!</h2>
+          {currentQuestion && <p>{currentQuestion.question}</p>}
+          <Button
+            disabled={isSoundPlaying}
+            variant="contained"
+            color="success"
+            onClick={() => handleAnswer(true, currentQuestion?.question)}
+            style={{ marginRight: "8px" }}
+          >
+            Verdadeiro
+          </Button>
+          <Button
+            disabled={isSoundPlaying}
+            variant="contained"
+            color="error"
+            onClick={() => handleAnswer(false, currentQuestion?.question)}
+          >
+            Falso
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

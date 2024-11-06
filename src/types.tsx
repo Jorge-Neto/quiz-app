@@ -7,10 +7,10 @@ export type Phase = {
   phaseNumber: number;
   phaseTitle: string;
   questions: Question[];
-  backgroundImage: any;
 };
 
 export type Player = {
+  currentQuestionIndex: any;
   name: string;
   score: number;
   totalScore: number;
