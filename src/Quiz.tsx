@@ -5,10 +5,10 @@ import { Button } from "@mui/material";
 import { Howl } from "howler";
 
 const phaseBackgrounds = [
-  "/images/phase1.jpg",
-  "/images/phase2.jpg",
-  "/images/phase3.jpg",
-  "/images/phase4.jpg",
+  "/images/phase1.webp",
+  "/images/phase2.webp",
+  "/images/phase3.webp",
+  "/images/phase4.webp",
 ];
 
 const phases: Phase[] = [
