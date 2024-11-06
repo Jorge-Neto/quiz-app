@@ -9,6 +9,8 @@ import phase2 from "./images/phase2.jpg";
 import phase3 from "./images/phase3.jpg";
 import phase4 from "./images/phase4.jpg";
 
+const phaseBackgrounds = [phase1, phase2, phase3, phase4];
+
 const phases: Phase[] = [
   {
     phaseNumber: 1,
@@ -243,8 +245,6 @@ const correctSound = new Howl({
 const incorrectSound = new Howl({
   src: ["/sounds/incorrect.mp3"],
 });
-
-const phaseBackgrounds = [phase1, phase2, phase3, phase4];
 
 const Quiz: React.FC = () => {
   const [players, setPlayers] = useState<Player[]>([]);
