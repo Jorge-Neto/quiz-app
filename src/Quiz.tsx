@@ -4,12 +4,12 @@ import PlayerSetup from "./PlayerSetup";
 import { Button } from "@mui/material";
 import { Howl } from "howler";
 
-import phase1 from "./images/phase1.jpg";
-import phase2 from "./images/phase2.jpg";
-import phase3 from "./images/phase3.jpg";
-import phase4 from "./images/phase4.jpg";
-
-const phaseBackgrounds = [phase1, phase2, phase3, phase4];
+const phaseBackgrounds = [
+  "/images/phase1.jpg",
+  "/images/phase2.jpg",
+  "/images/phase3.jpg",
+  "/images/phase4.jpg",
+];
 
 const phases: Phase[] = [
   {
